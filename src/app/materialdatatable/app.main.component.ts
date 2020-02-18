@@ -1,9 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Store, select } from '@ngrx/store';
 import { Sort, MatSort, MatTableDataSource } from '@angular/material';
 import { noop as _noop } from 'lodash-es';
 import { SuppliersData, OrderDetailsData } from './app.model';
 import { HttpDataService } from './app.data.service';
-
+import { IAppOrderState } from './framework/state/app.state';
+import { selectOrdersList } from './framework/selectors/app.selector';
+import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { OrdersActions } from './framework/actions';
+import { ɵngrx_modules_store_devtools_store_devtools_j } from '@ngrx/store-devtools';
 interface Element {
   name: string;
   position: number;
@@ -49,47 +55,53 @@ export class MainComponent implements OnInit {
   tableColumnHeaders: Array<string>;
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(private serv: HttpDataService) {
+  // constructor(private serv: HttpDataService) {
+  //   this.order = new OrderDetailsData(0, '', '', new Date(), new Date(), new Date(), '', 0, '', '', '', '', '');
+  //   this.orders = new Array<OrderDetailsData>();
+  //   this.displayedColumns = new Array<string>();
+  // }
+
+  //ordersDetails$: Observable<OrderDetailsData>;
+
+  ordersDetails$ =  this._store.pipe(select(selectOrdersList));
+
+  constructor(private _store: Store<IAppOrderState>, private router: Router) {
     this.order = new OrderDetailsData(0, '', '', new Date(), new Date(), new Date(), '', 0, '', '', '', '', '');
     this.orders = new Array<OrderDetailsData>();
     this.displayedColumns = new Array<string>();
   }
 
+
   ngOnInit() {
     for(let c in this.order) {
       this.displayedColumns.push(c);
     }
-    this.loadData();
+      this._store.dispatch(OrdersActions.getOrders());
   }
 
   handleScroll = (scrolled: boolean) => {
     console.timeEnd('lastScrolled');
-    scrolled ? this.loadData() : _noop();
+    //scrolled ? this.loadData() : _noop();
     console.time('lastScrolled');
   }
   hasMore = () => !this.dataSource || this.dataSource.data.length < this.limit;
 
-  // getData() {
-  //   const data: Element[] = this.dataSource
-  //     ? [...this.dataSource.data, ...ELEMENT_DATA]
-  //     : ELEMENT_DATA;
-  //   this.dataSource = new MatTableDataSource(data);
-  //   this.dataSource.sort = this.sort;
+
+
+
+  // loadData(): void {
+  //   this.serv.get().subscribe((resp)=> {
+  //    this.orders = this.dataSource
+  //     ? [...this.dataSource.data, ...resp]
+  //     : resp;
+  //    this.dataSource = new MatTableDataSource(this.orders);
+  //    this.dataSource.sort = this.sort;
+
+  //   },(error)=>{
+  //     console.log(`Error Occures ${error}`);
+  //   });
   // }
-
-  loadData(): void {
-    this.serv.get().subscribe((resp)=> {
-     this.orders = this.dataSource
-      ? [...this.dataSource.data, ...resp]
-      : resp;
-     this.dataSource = new MatTableDataSource(this.orders);
-     this.dataSource.sort = this.sort;
-
-    },(error)=>{
-      console.log(`Error Occures ${error}`);
-    });
-  }
-  selectRow = (row)=> {
-    alert(JSON.stringify(row));
+  selectRow = (row:OrderDetailsData)=> {
+    this.router.navigate(['customer', row.OrderId]);
   }
 }

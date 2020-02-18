@@ -1,5 +1,6 @@
 <app-scroll-container [more]="hasMore()" [scrollOffset]="2500" [scrollDelay]="3000" (scrolled)="handleScroll($event)" [class.full]="full" [class.part]="!full">
-    <mat-table [dataSource]="dataSource" matSort>
+    <!--The  [dataSource]=datasource is replaced-->
+    <mat-table [dataSource]="ordersDetails$|async" matSort>
         <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
             <mat-header-cell *matHeaderCellDef mat-sort-header>
                 {{ column | titlecase }}
